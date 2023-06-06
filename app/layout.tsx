@@ -1,6 +1,8 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
-import NextAuthProvider from '@/components/NextAuthProvider';
+import NextAuthProvider from '../lib/nextAuthProvider';
+import ReactQueryProvider from '../lib/reactQueryProvider';
+import Header from '../components/Header/Header';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -16,8 +18,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang='en'>
-      <body className={inter.className}>
-        <NextAuthProvider>{children}</NextAuthProvider>
+      <body className={`${inter.className} bg-gray-100`}>
+        <NextAuthProvider>
+          <ReactQueryProvider>
+            {/* @ts-expect-error Server Component */}
+            <Header />
+            {children}
+          </ReactQueryProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );

@@ -17,7 +17,7 @@ export const authOptions = {
     // ...add more providers here
   ],
   pages: {
-    signIn: '/random',
+    signIn: `/signin`,
   },
 };
 

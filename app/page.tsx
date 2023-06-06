@@ -1,29 +1,9 @@
-'use client';
-
-import { useSession, signIn, signOut } from 'next-auth/react';
-import Link from 'next/link';
+import React from 'react';
 
 export default function Home() {
-  const { data: session } = useSession();
-
-  if (session) {
-    return (
-      <>
-        Signed in as {session?.user?.email} <br />
-        <button onClick={() => signOut()}>Sign out</button>
-        <Link href='/protected-route'>
-          <h1>Click</h1>
-        </Link>
-      </>
-    );
-  }
   return (
-    <>
-      Not signed in <br />
-      <button onClick={() => signIn()}>Sign in</button>
-      <Link href='/protected-route'>
-        <h1>Click</h1>
-      </Link>
-    </>
+    <div className='px-4 sm:container sm:mx-auto sm:px-64'>
+      <h1>Home</h1>
+    </div>  
   );
 }
