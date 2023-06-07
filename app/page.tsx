@@ -1,9 +1,15 @@
-import React from 'react';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from './api/auth/[...nextauth]/route';
+import SubmitPost from '@/components/Home/SubmitPost';
+import Post from '@/components/Home/Post/Post';
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions);
   return (
-    <div className='px-4 sm:container sm:mx-auto sm:px-64'>
-      <h1>Home</h1>
-    </div>  
+    <div className='px-4 sm:container mx-auto md:px-44'>
+      {session && <SubmitPost />}
+      {/* @ts-expect-error Server Component */}
+      <Post />
+    </div>
   );
 }

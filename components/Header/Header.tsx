@@ -6,7 +6,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../app/api/auth/[...nextauth]/route';
@@ -24,10 +24,14 @@ export default async function Header() {
           <span className='text-blue-500'>Post</span> It
         </h1>
       </Link>
+
       {session ? (
         <div className='flex items-center h-16 px-4'>
           <Avatar>
-            <AvatarImage src={session?.user?.image ?? ''} />
+            <AvatarImage src={session.user?.image || undefined} />
+            <AvatarFallback>
+              {session.user?.name?.charAt(0).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <DropdownMenu>
             <DropdownMenuTrigger>
