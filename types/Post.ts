@@ -4,14 +4,22 @@ export interface Posttypes {
   updatedAt: Date;
   body: string;
   authorId: string;
-  author: Author;
-  likes: any[];
+  author: Authortype;
+  likes: Liketypes[];
 }
 
-export interface Author {
+export interface Authortype {
   id: string;
   name: string;
   email: string;
   emailVerified: null;
   image: string;
+}
+
+export interface Liketypes {
+  id: string;
+  postId: string;
+  userId: string;
+  post: Posttypes[];
+  user: Authortype;
 }

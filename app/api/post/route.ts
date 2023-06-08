@@ -10,7 +10,12 @@ export async function GET(request: Request) {
     },
     include: {
       author: true,
-      likes: true,
+      likes: {
+        include: {
+          post: true,
+          user: true,
+        },
+      },
     },
   });
 
