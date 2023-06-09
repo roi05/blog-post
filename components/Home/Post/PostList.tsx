@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { FaHeart } from 'react-icons/fa';
 import { useQuery } from '@tanstack/react-query';
 import { getPosts } from './Post';
@@ -8,37 +9,21 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useSession, signIn } from 'next-auth/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { addLike } from '@/lib/fetcher/addLike';
+
 import { v4 as uuidv4 } from 'uuid';
 
 type Props = {
   post: Posttypes;
 };
 
-const addLike = async (postId: string) => {
-  try {
-    const response = await axios.post(`/api/like/${postId}`);
-    return response.data;
-  } catch (error) {
-    throw new Error('Failed to Like a post');
-  }
-};
-
-const deleteLike = async (postId: string) => {
-  try {
-    const response = await axios.delete(`/api/like/${postId}`);
-    return response.data;
-  } catch (error) {
-    throw new Error('Failed to Like a post');
-  }
-};
-
 const IndividualPost = ({ post }: Props) => {
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
   const [liked, setLiked] = useState(() => {
     return post.likes.some(like => like.user.email === session?.user?.email);
   });
-  const queryClient = useQueryClient();
 
   const {
     likes,
@@ -47,62 +32,38 @@ const IndividualPost = ({ post }: Props) => {
     author: { image, name },
   } = post;
 
-  const { mutate: mutateAddLike } = useMutation(addLike, {
+  const { mutate } = useMutation(addLike, {
     onMutate: async postId => {
       await queryClient.cancelQueries({ queryKey: ['posts'] });
       const previousPosts = queryClient.getQueryData(['posts']);
-      setLiked(true);
+
       queryClient.setQueryData(['posts'], (old: any) => {
         const updatedPosts = old.map((post: any) => {
           if (post.id === postId) {
-            const updatedLikes = [
-              ...post.likes,
-              {
-                id: uuidv4(),
-                postId,
-                userId: 'optimistic-user-id',
-                post: [],
-                user: {
-                  id: 'optimistic-user-id',
-                  name: '',
-                  email: '',
-                  emailVerified: null,
-                  image: '',
-                },
-              },
-            ];
-            return { ...post, likes: updatedLikes };
-          }
-          return post;
-        });
-
-        return updatedPosts;
-      });
-      return { previousPosts };
-    },
-
-    onError: (err, newTodo, context) => {
-      queryClient.setQueryData(['posts'], context?.previousPosts);
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-      setLiked(true);
-    },
-  });
-
-  const { mutate: mutateDeleteLike } = useMutation(deleteLike, {
-    onMutate: async postId => {
-      await queryClient.cancelQueries({ queryKey: ['posts'] });
-      const previousPosts = queryClient.getQueryData(['posts']);
-      setLiked(false);
-      queryClient.setQueryData(['posts'], (old: any) => {
-        const updatedPosts = old.map((post: any) => {
-          if (post.id === postId) {
-            const updatedLikes = post.likes.filter(
-              (like: any) => like.user.email !== session?.user?.email
+            const userLikeIndex = post.likes.findIndex(
+              (like: any) => like.user.email === session?.user?.email
             );
-            return { ...post, likes: updatedLikes };
+            if (userLikeIndex !== -1) {
+              const updatedLikes = [...post.likes];
+              updatedLikes.splice(userLikeIndex, 1);
+              return { ...post, likes: updatedLikes };
+            } else {
+              const newLike = {
+                id: uuidv4(),
+                postId: postId,
+                userId: uuidv4(),
+                post: {},
+                user: {
+                  id: uuidv4(),
+                  name: session?.user?.name,
+                  email: session?.user?.email,
+                  emailVerified: null,
+                  image: session?.user?.image,
+                },
+              };
+              const updatedLikes = [...post.likes, newLike];
+              return { ...post, likes: updatedLikes };
+            }
           }
           return post;
         });
@@ -112,13 +73,13 @@ const IndividualPost = ({ post }: Props) => {
 
       return { previousPosts };
     },
+
     onError: (err, newTodo, context) => {
       queryClient.setQueryData(['posts'], context?.previousPosts);
     },
 
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      setLiked(false);
     },
   });
 
@@ -127,13 +88,8 @@ const IndividualPost = ({ post }: Props) => {
       return signIn();
     }
 
-    if (!liked) {
-      mutateAddLike(id);
-    }
-
-    if (liked) {
-      mutateDeleteLike(id);
-    }
+    mutate(id);
+    setLiked(prev => !prev);
   };
 
   return (
@@ -172,7 +128,13 @@ const PostList = () => {
 
   return (
     <div className='container mx-auto px-4'>
-      {data && data.map(post => <IndividualPost post={post} />)}
+      {data &&
+        data.map(post => (
+          <IndividualPost
+            key={post.id}
+            post={post}
+          />
+        ))}
     </div>
   );
 };
