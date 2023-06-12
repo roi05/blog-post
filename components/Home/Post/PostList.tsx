@@ -10,7 +10,6 @@ import { Separator } from '@/components/ui/separator';
 import { useSession, signIn } from 'next-auth/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addLike } from '@/lib/fetcher/addLike';
-
 import { v4 as uuidv4 } from 'uuid';
 
 type Props = {
@@ -106,7 +105,7 @@ const IndividualPost = ({ post }: Props) => {
         </div>
         <span className='text-gray-500'>{likes?.length} Likes</span>
       </div>
-      <p className='text-gray-800'>{body}</p>
+      <p className='text-gray-800 py-3'>{body}</p>
       <Separator className='my-4' />
       <button
         className={`flex items-center text-gray-600 ${

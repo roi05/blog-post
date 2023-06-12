@@ -3,7 +3,7 @@ import { prisma } from '../../../prisma/client';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 
-export async function GET(request: Request) {
+export async function GET() {
   const data = await prisma.post.findMany({
     orderBy: {
       createdAt: 'desc',
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json(data);
+  return NextResponse.json(data, { status: 200 });
 }
 
 export async function POST(request: Request) {

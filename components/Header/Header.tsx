@@ -27,12 +27,14 @@ export default async function Header() {
 
       {session ? (
         <div className='flex items-center h-16 px-4'>
-          <Avatar>
-            <AvatarImage src={session.user?.image || undefined} />
-            <AvatarFallback>
-              {session.user?.name?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <Link href='/user-feed'>
+            <Avatar>
+              <AvatarImage src={session.user?.image || undefined} />
+              <AvatarFallback>
+                {session.user?.name?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger>
               <IoMdArrowDropdown className='text-2xl cursor-pointer' />

@@ -10,10 +10,9 @@ export const getPosts = async () => {
 
 export default async function Post() {
   const queryClient = getQueryClient();
-  const data = await queryClient.prefetchQuery(['posts'], getPosts);
+  await queryClient.prefetchQuery(['posts'], getPosts);
   const dehydratedState = dehydrate(queryClient);
 
-  console.log(data);
   return (
     <Hydrate state={dehydratedState}>
       <PostList />
