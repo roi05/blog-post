@@ -29,6 +29,7 @@
     "postcss": "8.4.24",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-edit-text": "^5.1.0",
     "react-icons": "^4.9.0",
     "tailwind-merge": "^1.13.0",
     "tailwindcss": "3.3.2",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.2.5",
+    "@types/react-edit-text": "^5.0.1",
     "@types/uuid": "^9.0.1",
     "prisma": "^4.15.0",
     "ts-node": "^10.9.1",

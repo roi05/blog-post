@@ -9,19 +9,15 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useSession } from 'next-auth/react';
 
+const createPost = async (postData: string) => {
+  const response = await axios.post('/api/post', { body: postData });
+  return response.data;
+};
+
 export default function SubmitPost() {
   const [textareaValue, setTextareaValue] = useState('');
   const queryClient = useQueryClient();
   const { data: session } = useSession();
-
-  const createPost = async (postData: string) => {
-    try {
-      const response = await axios.post('/api/post', { body: postData });
-      return response.data;
-    } catch (error) {
-      throw new Error('Failed to create post');
-    }
-  };
 
   const { mutate, isLoading } = useMutation(createPost, {
     onMutate: async newPost => {
