@@ -11,6 +11,7 @@ import { useSession, signIn } from 'next-auth/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addLike } from '@/lib/fetcher/addLike';
 import { v4 as uuidv4 } from 'uuid';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 type Props = {
   post: Posttypes;
@@ -120,10 +121,18 @@ const IndividualPost = ({ post }: Props) => {
 };
 
 const PostList = () => {
-  const { data } = useQuery<Posttypes[]>({
+  const { data, isLoading } = useQuery<Posttypes[]>({
     queryKey: ['posts'],
     queryFn: getPosts,
   });
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (data?.length === 0) {
+    return <h1 className='text-center text-2xl mt-5'>There is no post</h1>;
+  }
 
   return (
     <div className='container mx-auto px-4'>

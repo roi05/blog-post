@@ -11,7 +11,7 @@ export default async function page() {
 
   const queryClient = getQueryClient();
   await queryClient.prefetchQuery(
-    ['getAllUserPost', session?.user?.email],
+    ['posts', session?.user?.email],
     getAllUserPost
   );
   const dehydratedState = dehydrate(queryClient);

@@ -10,6 +10,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { EditTextarea } from 'react-edit-text';
 import 'react-edit-text/dist/index.css';
+import LoadingSpinner from '../LoadingSpinner';
 
 const updateUserPost = async (data: { id: string; body: string }) => {
   const { id, body } = data;
@@ -33,25 +34,43 @@ const UserPostList = ({ post }: { post: PostTypes }) => {
   const [postBody, setPostbody] = useState(body);
 
   const { mutate: mutateUpdate } = useMutation(updateUserPost, {
-    onMutate: async newTodo => {
+    onMutate: async update => {
       // Snapshot the previous value
       const previousUserPost = queryClient.getQueryData([
-        'getAllUserPost',
+        'posts',
         session?.user?.email,
       ]);
+
+      queryClient.setQueryData(['posts'], (old: any) => {
+        old.map((post: any) => {
+          post.id === update.id && (post.body = update.body);
+        });
+      });
+
+      queryClient.setQueryData(['posts', session?.user?.email], (old: any) => {
+        return {
+          ...old,
+          posts: old.posts.map((post: any) => {
+            if (post.id === update.id) {
+              post.body = update.body;
+            }
+            return post;
+          }),
+        };
+      });
 
       // Return a context object with the snapshotted value
       return { previousUserPost };
     },
-    onError: (err, newTodo, context) => {
+    onError: (err, update, context) => {
       queryClient.setQueryData(
-        ['getAllUserPost', session?.user?.email],
+        ['posts', session?.user?.email],
         context?.previousUserPost
       );
     },
     onSettled: () => {
       Promise.all([
-        queryClient.invalidateQueries(['getAllUserPost', session?.user?.email]),
+        queryClient.invalidateQueries(['posts', session?.user?.email]),
         queryClient.invalidateQueries(['posts']),
       ]);
     },
@@ -62,23 +81,24 @@ const UserPostList = ({ post }: { post: PostTypes }) => {
       // Cancel any outgoing refetches
       // (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
-        queryKey: ['getAllUserPost', session?.user?.email],
+        queryKey: ['posts', session?.user?.email],
       });
 
       // Snapshot the previous value
       const previousUserPost = queryClient.getQueryData([
-        'getAllUserPost',
+        'posts',
         session?.user?.email,
       ]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(
-        ['getAllUserPost', session?.user?.email],
-        (old: any) => ({
-          ...old,
-          posts: old.posts.filter((post: any) => post.id !== id),
-        })
-      );
+      queryClient.setQueryData(['posts', session?.user?.email], (old: any) => ({
+        ...old,
+        posts: old.posts.filter((post: any) => post.id !== id),
+      }));
+
+      queryClient.setQueryData(['posts'], (old: any) => {
+        return old.filter((post: any) => post.id !== id);
+      });
 
       // Return a context object with the snapshotted value
       return { previousUserPost };
@@ -86,15 +106,15 @@ const UserPostList = ({ post }: { post: PostTypes }) => {
 
     // If the mutation fails,
     // use the context returned from onMutate to roll back
-    onError: (err, newTodo, context) => {
+    onError: (err, id, context) => {
       queryClient.setQueryData(
-        ['getAllUserPost', session?.user?.email],
+        ['posts', session?.user?.email],
         context?.previousUserPost
       );
     },
     onSettled: () => {
       Promise.all([
-        queryClient.invalidateQueries(['getAllUserPost', session?.user?.email]),
+        queryClient.invalidateQueries(['posts', session?.user?.email]),
         queryClient.invalidateQueries(['posts']),
       ]);
     },
@@ -143,10 +163,18 @@ const UserPostList = ({ post }: { post: PostTypes }) => {
 export default function UserPost() {
   const { data: session } = useSession();
 
-  const { data } = useQuery<UserPostTypes>(
-    ['getAllUserPost', session?.user?.email],
+  const { data, isLoading } = useQuery<UserPostTypes>(
+    ['posts', session?.user?.email],
     getAllUserPost
   );
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (data?.posts?.length === 0) {
+    return <h1 className='text-center text-2xl mt-5'>You have no post</h1>;
+  }
 
   return (
     <div className='container mx-auto px-4'>
