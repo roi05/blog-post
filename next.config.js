@@ -1,4 +1,15 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const { execSync } = require('child_process');
 
-module.exports = nextConfig
+const nextConfig = {
+  // ...existing Next.js configuration...
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      execSync('npx prisma generate');
+    }
+
+    return config;
+  },
+};
+
+module.exports = nextConfig;
