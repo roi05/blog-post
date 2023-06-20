@@ -44,6 +44,7 @@ export default function SubmitPost() {
       ]);
 
       queryClient.setQueryData(['posts', session?.user?.email], (old: any) => {
+        if (newPost === '') return;
         return { ...old, posts: [optimisticPost, ...old.posts] };
       });
 
